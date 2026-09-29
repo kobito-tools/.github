@@ -10,8 +10,9 @@ Each repository's README is expected to follow the kobito-tools convention:
     ## 動作環境
     - macOS ...
 
-If the README has no right-aligned icon, a PNG whose name contains "icon" in
-assets/icon/ is used instead.
+Each tool is shown with the repository's Social preview image (1280x640). If none
+is set, the square icon is used: the README's right-aligned image, or a PNG whose
+name contains "icon" in assets/icon/.
 
 Repositories are skipped when they are forks, archived, private, named ".github",
 or carry the topic "profile-hide".
@@ -47,6 +48,29 @@ def request(path, accept="application/vnd.github+json"):
         if e.code == 404:
             return None
         raise
+
+
+def social_preview(name):
+    """Return the custom Social preview image URL, or None if the repo has none."""
+    if os.environ.get("GITHUB_TOKEN"):
+        query = "query($o:String!,$n:String!){repository(owner:$o,name:$n){usesCustomOpenGraphImage openGraphImageUrl}}"
+        req = urllib.request.Request(
+            f"{API}/graphql",
+            data=json.dumps({"query": query, "variables": {"o": ORG, "n": name}}).encode(),
+            headers={"Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+                     "User-Agent": f"{ORG}-profile-updater"},
+        )
+        with urllib.request.urlopen(req) as res:
+            repo = json.load(res)["data"]["repository"]
+        return repo["openGraphImageUrl"] if repo["usesCustomOpenGraphImage"] else None
+
+    # GraphQL needs a token; without one, read the og:image of the public repo page.
+    req = urllib.request.Request(f"https://github.com/{ORG}/{name}",
+                                 headers={"User-Agent": f"{ORG}-profile-updater"})
+    with urllib.request.urlopen(req) as res:
+        html = res.read().decode("utf-8")
+    m = re.search(r'<meta property="og:image" content="(https://repository-images\.githubusercontent\.com/[^"]+)"', html)
+    return m.group(1) if m else None
 
 
 def list_repos():
@@ -99,30 +123,34 @@ def find_icon(name):
     return sorted(icons, key=lambda f: ("1024" not in f, f))[0] if icons else None
 
 
-def build_row(repo):
+def build_section(repo):
     name, branch, url = repo["name"], repo["default_branch"], repo["html_url"]
     readme = request(f"/repos/{ORG}/{name}/readme", accept="application/vnd.github.raw") or ""
     title, icon, summary, platforms = parse_readme(readme)
 
     title = title or name
-    icon = icon or find_icon(name)
     summary = summary or repo.get("description") or ""
-    summary = summary.replace("|", "\\|")
     # Make relative links in the summary point at the tool's own repository.
     summary = re.sub(r"\]\((?!https?://|#)([^)]+)\)", rf"]({url}/blob/{branch}/\1)", summary)
 
-    if icon and not icon.startswith("http"):
-        icon = f"https://raw.githubusercontent.com/{ORG}/{name}/{branch}/{icon.lstrip('./')}"
-    icon_cell = f'<a href="{url}"><img src="{icon}" width="64" alt="{title}"></a>' if icon else ""
+    banner = social_preview(name)
+    if banner:
+        image = f'<a href="{url}"><img src="{banner}" width="640" alt="{title}"></a>'
+    else:
+        icon = icon or find_icon(name)
+        if icon and not icon.startswith("http"):
+            icon = f"https://raw.githubusercontent.com/{ORG}/{name}/{branch}/{icon.lstrip('./')}"
+        image = f'<a href="{url}"><img src="{icon}" width="96" alt="{title}"></a>' if icon else ""
 
     release = request(f"/repos/{ORG}/{name}/releases/latest")
-    if release:
-        tag = json.loads(release)["tag_name"]
-        dl = f"[{tag}]({url}/releases/latest)"
-    else:
-        dl = "—"
+    latest = f"[{json.loads(release)['tag_name']}]({url}/releases/latest)" if release else "—"
 
-    return f"| {icon_cell} | **[{title}]({url})** | {summary} | {' · '.join(platforms) or '—'} | {dl} |"
+    parts = [f"### [{title}]({url})"]
+    if image:
+        parts.append(image)
+    parts.append(summary)
+    parts.append(f"**対応 OS:** {' · '.join(platforms) or '—'}　**最新版:** {latest}")
+    return "\n\n".join(parts)
 
 
 def main():
@@ -133,17 +161,14 @@ def main():
     ]
     repos.sort(key=lambda r: r["created_at"])
 
-    table = "\n".join(
-        ["|  | ツール | 概要 | 対応 OS | 最新版 |", "|:-:|---|---|---|:-:|"]
-        + [build_row(r) for r in repos]
-    )
+    body = "\n\n".join(build_section(r) for r in repos)
 
     content = README.read_text(encoding="utf-8")
     if START not in content or END not in content:
         sys.exit(f"{README} に {START} / {END} のマーカーがありません")
     head, rest = content.split(START, 1)
     _, tail = rest.split(END, 1)
-    README.write_text(f"{head}{START}\n{table}\n{END}{tail}", encoding="utf-8")
+    README.write_text(f"{head}{START}\n{body}\n{END}{tail}", encoding="utf-8")
     print(f"{len(repos)} repositories: {', '.join(r['name'] for r in repos)}")
 
 

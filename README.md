@@ -13,7 +13,7 @@ GitHub Actions（[update-profile.yml](.github/workflows/update-profile.yml)）�
 | 項目 | 読み取り元 |
 |---|---|
 | ツール名 | README の最初の `# 見出し` |
-| アイコン | README 冒頭の `<img src="..." align="right">`（なければ `assets/icon/` 内の名前に icon を含む PNG） |
+| 画像 | リポジトリの Social preview（1280×640）。未設定なら README 冒頭の `<img src="..." align="right">`、それもなければ `assets/icon/` 内の名前に icon を含む PNG |
 | 概要 | 見出しの次の最初の段落（なければリポジトリの Description） |
 | 対応 OS | README の `## 動作環境` に書かれた macOS / Windows など |
 | 最新版 | 最新の Release のタグ |
