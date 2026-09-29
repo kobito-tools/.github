@@ -10,6 +10,9 @@ Each repository's README is expected to follow the kobito-tools convention:
     ## 動作環境
     - macOS ...
 
+If the README has no right-aligned icon, a PNG whose name contains "icon" in
+assets/icon/ is used instead.
+
 Repositories are skipped when they are forks, archived, private, named ".github",
 or carry the topic "profile-hide".
 """
@@ -87,12 +90,22 @@ def parse_readme(text):
     return title, icon, " ".join(summary), platforms
 
 
+def find_icon(name):
+    listing = request(f"/repos/{ORG}/{name}/contents/assets/icon")
+    if not listing:
+        return None
+    files = [f["path"] for f in json.loads(listing) if f["type"] == "file"]
+    icons = [f for f in files if re.search(r"icon[^/]*\.png$", f, re.I)]
+    return sorted(icons, key=lambda f: ("1024" not in f, f))[0] if icons else None
+
+
 def build_row(repo):
     name, branch, url = repo["name"], repo["default_branch"], repo["html_url"]
     readme = request(f"/repos/{ORG}/{name}/readme", accept="application/vnd.github.raw") or ""
     title, icon, summary, platforms = parse_readme(readme)
 
     title = title or name
+    icon = icon or find_icon(name)
     summary = summary or repo.get("description") or ""
     summary = summary.replace("|", "\\|")
     # Make relative links in the summary point at the tool's own repository.
