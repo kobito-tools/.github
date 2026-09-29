@@ -13,7 +13,7 @@ kobito-tools は、macOS / Windows 向けのデスクトップツールをつく
 
 OpenSesame! は、キーを押している間だけ表示される macOS / Windows 用のランチャーです。
 
-**対応 OS:** macOS · Windows　**最新版:** [v0.1.0](https://github.com/kobito-tools/OpenSesame/releases/latest)
+**対応 OS:** macOS · Windows　**最新版:** [v0.1.2](https://github.com/kobito-tools/OpenSesame/releases/latest)
 
 ### [Tomelet](https://github.com/kobito-tools/Tomelet)
 
@@ -21,7 +21,7 @@ OpenSesame! は、キーを押している間だけ表示される macOS / Windo
 
 Tomelet は、日記・時間割・Todo・関連ファイルを一括管理する、macOS / Windows 用の個人向け記録アプリです。
 
-**対応 OS:** macOS · Windows　**最新版:** —
+**対応 OS:** macOS · Windows　**最新版:** [v0.1.1](https://github.com/kobito-tools/Tomelet/releases/latest)
 
 ### [PopNote!](https://github.com/kobito-tools/PopNote)
 
@@ -29,7 +29,7 @@ Tomelet は、日記・時間割・Todo・関連ファイルを一括管理す�
 
 PopNote! は、押したらポンッと出てきてすぐに書ける macOS 用のクイックメモです。会議中などに思いついたことを、ランチャーからワンアクションで書き留められます。
 
-**対応 OS:** macOS　**最新版:** —
+**対応 OS:** macOS　**最新版:** [v0.2.1](https://github.com/kobito-tools/PopNote/releases/latest)
 
 ### [Pastephant](https://github.com/kobito-tools/Pastephant)
 
@@ -37,7 +37,7 @@ PopNote! は、押したらポンッと出てきてすぐに書ける macOS 用�
 
 Pastephant は、コピーした物を忘れない象の、macOS 用クリップボード履歴アプリです。`⌘C` でコピーした文字・画像・ファイル・パワポの図形などを元の形のまま覚えておき、`⌥⌘V` で画面の端から呼び出して貼れます。貼る前の変換、タグ、定型文、数式画像、画像の文字認識、順番に貼るペーストスタックもそろっています。
 
-**対応 OS:** macOS　**最新版:** —
+**対応 OS:** macOS　**最新版:** [v0.1.0](https://github.com/kobito-tools/Pastephant/releases/latest)
 <!-- TOOLS:END -->
 
 ## 組み合わせて使う
