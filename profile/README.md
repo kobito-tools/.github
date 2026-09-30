@@ -13,7 +13,7 @@ kobito-tools は、macOS / Windows 向けのデスクトップツールをつく
 
 OpenSesame! は、キーを押している間だけ表示される macOS / Windows 用のランチャーです。
 
-**対応 OS:** macOS · Windows　**最新版:** [v0.1.2](https://github.com/kobito-tools/OpenSesame/releases/latest)
+**対応 OS:** macOS · Windows　**最新版:** [v0.1.4](https://github.com/kobito-tools/OpenSesame/releases/latest)
 
 ### [Tomelet](https://github.com/kobito-tools/Tomelet)
 
@@ -35,7 +35,7 @@ PopNote! は、押したらポンッと出てきてすぐに書ける macOS 用�
 
 <a href="https://github.com/kobito-tools/Pastephant"><img src="https://repository-images.githubusercontent.com/1394512727/a9d82b04-6e17-4448-9d98-bb04be6edd1d" width="640" alt="Pastephant"></a>
 
-Pastephant は、コピーした物を忘れない象の、macOS 用クリップボード履歴アプリです。`⌘C` でコピーした文字・画像・ファイル・パワポの図形などを元の形のまま覚えておき、`⌥⌘V` で画面の端から呼び出して貼れます。貼る前の変換、タグ、定型文、数式画像、画像の文字認識、順番に貼るペーストスタックもそろっています。
+Pastephant は、コピーした物を忘れない象の、macOS 用クリップボード履歴アプリです。
 
 **対応 OS:** macOS　**最新版:** [v0.1.0](https://github.com/kobito-tools/Pastephant/releases/latest)
 <!-- TOOLS:END -->
