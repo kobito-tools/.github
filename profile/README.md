@@ -8,7 +8,7 @@ kobito-tools は、小人（kobito）のように手を貸してくれる、デ�
 
 - **どのアプリも単体で使えます。** ほしいアプリだけを入れて、ふつうのアプリとして開けます。
 - **[kobito-workspace](https://github.com/kobito-tools/kobito-workspace) に並べると、1つのウインドウで使えます。** 入れたアプリが workspace に並び、切り替えながら使えて、横断検索もできます。
-- **アプリは、決まりを守れば誰でも足せます。** リポジトリの直下に目印 `kobito-app.json` を置き、GitHub の topic `kobito-app` を付けると、workspace と下の一覧に並びます。決まりは kobito-workspace の [docs/APP_PACKAGE.md](https://github.com/kobito-tools/kobito-workspace/blob/main/docs/APP_PACKAGE.md) にあります。
+- **どのアプリも、同じ形のリポジトリです。** 直下に名乗り `kobito-app.json` を、`kobito/` にアイコンと画像を、決まった名前で置きます。GitHub の topic `kobito-app` を付けると、workspace と下の一覧に、同じ紹介のカードで並びます。決まりは kobito-workspace の [APP_PACKAGE.md](https://github.com/kobito-tools/kobito-workspace/blob/main/kobito_workspace/kit/docs/APP_PACKAGE.md) にあります。
 
 ## 入れ方
 
@@ -23,12 +23,12 @@ zsh -c "$(curl -fsSL https://raw.githubusercontent.com/kobito-tools/kobito-works
 ## アプリ一覧
 
 <!-- TOOLS:START -->
-<!-- 今は、手元のフォルダの kobito-app.json から作った一覧です（画像なし）。scripts/update_profile.py を動かすと、GitHub から作った一覧に置き換わります。 -->
+<!-- 今は、手元のフォルダの kobito-app.json から作った仮の一覧です（画像なし）。topic を付けて scripts/update_profile.py を動かすと、GitHub から作った一覧（アイコン・画像つき）に置き換わります。 -->
 ### [kobito-workspace](https://github.com/kobito-tools/kobito-workspace)
 
-各アプリを並べる枠、HOME、横断検索
+シリーズのアプリを1つの窓に並べる
 
-**種類:** Python　**対応 OS:** macOS　**最新版:** —
+**種類:** Python　**対応 OS:** macOS　**最新版:** 0.1.0
 
 ### [CorkClip](https://github.com/kobito-tools/CorkClip)
 
@@ -38,21 +38,21 @@ zsh -c "$(curl -fsSL https://raw.githubusercontent.com/kobito-tools/kobito-works
 
 ### [Daycierge](https://github.com/kobito-tools/Daycierge)
 
-予定・Todo・時間割・作業の記録・タイマーを1つにまとめたアプリ
+今日の予定とやることを、ひと目で
 
-**種類:** Python　**対応 OS:** macOS · Windows　**最新版:** —
+**種類:** Python　**対応 OS:** macOS · Windows　**最新版:** 0.1.0
 
 ### [Filepantry](https://github.com/kobito-tools/Filepantry)
 
-ディスク全体のファイラーに、書籍・文書の管理とダウンロードの振り分けを組み合わせたアプリ
+ファイルを見て、しまって、届いたら振り分ける
 
-**種類:** Python　**対応 OS:** macOS · Windows　**最新版:** —
+**種類:** Python　**対応 OS:** macOS · Windows　**最新版:** 0.1.0
 
 ### [GitTrain](https://github.com/kobito-tools/GitTrain)
 
-Git の履歴を、マス目の地面に敷いた線路と電車で見せる Git の GUI
+Git の履歴を、線路と電車で見る
 
-**種類:** Python　**対応 OS:** macOS　**最新版:** —
+**種類:** Python　**対応 OS:** macOS　**最新版:** 0.1.0
 
 ### [OpenSesame!](https://github.com/kobito-tools/OpenSesame)
 
@@ -62,25 +62,25 @@ Git の履歴を、マス目の地面に敷いた線路と電車で見せる Git
 
 ### [PopNote!](https://github.com/kobito-tools/PopNote)
 
-押したらすぐ書けるメモと日記
+ポンッと開いて、すぐ書けるメモと日記
 
 **種類:** Python　**対応 OS:** macOS · Windows　**最新版:** [v0.2.1](https://github.com/kobito-tools/PopNote/tree/v0.2.1)
 
 ### [PyMaison](https://github.com/kobito-tools/PyMaison)
 
-uv のコマンドを、マンションのイラストで学ぶ GUI
+uv のコマンドを、マンションの絵で学ぶ
 
-**種類:** Python　**対応 OS:** macOS · Windows · Linux　**最新版:** —
+**種類:** Python　**対応 OS:** macOS · Windows · Linux　**最新版:** 0.3.0
 
 ### [ScreenDresser](https://github.com/kobito-tools/ScreenDresser)
 
-作業・ミーティング・発表などのモードを1クリックで切り替える、画面の着せ替え係
+仕事・会議・発表に合わせて、画面をワンクリックで着替える
 
-**種類:** Python　**対応 OS:** macOS　**最新版:** —
+**種類:** Python　**対応 OS:** macOS　**最新版:** 0.1.0
 <!-- TOOLS:END -->
 
 以前の Pastephant を使っていた方は、CorkClip の README の「[Pastephant から乗り換える場合](https://github.com/kobito-tools/CorkClip#pastephant-から乗り換える場合)」を見てください。
 
 ---
 
-<sub>「アプリ一覧」は、GitHub Actions が、topic `kobito-app` の付いたリポジトリの `kobito-app.json` から自動で作っています。</sub>
+<sub>「アプリ一覧」は、GitHub Actions が、topic `kobito-app` の付いたリポジトリの紹介のカード（`kobito-app.json` と `kobito/` の画像）から自動で作っています。</sub>
