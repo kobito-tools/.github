@@ -2,24 +2,22 @@
 """Regenerate the app lineup in profile/README.md.
 
 The lineup lists the org's repositories that carry the topic "kobito-app" and
-have a valid kobito-app.json at their root (the format is described in
-kobito-workspace's docs/APP_PACKAGE.md). Name, summary, kind and platforms come
-from kobito-app.json.
+have a valid kobito-app.json at their root. Each app is shown as its card
+(kobito-workspace's kobito_workspace/kit/docs/APP_PACKAGE.md, section 6), made
+only from kobito-app.json and the fixed-name images in kobito/ on the default
+branch. Nothing from the repositories is run.
 
-Each app is shown with the repository's Social preview image (1280x640). If none
-is set, the square icon is used: the README's right-aligned image, or a PNG whose
-name contains "icon" in assets/icon/.
-
-The latest version is the newest Release for native apps. Python apps make no
-Releases and mark versions with tags only, so the newest "v*" tag is shown
-(native apps without a Release fall back to tags as well).
+    icon         kobito/icon-1024.png (kobito/icon.svg if there is no PNG); none if neither
+    name         "name"
+    tagline      "tagline", else "description"; none if neither
+    kind         "kind" (Python / ネイティブ), with "platforms"
+    image        kobito/screenshot.png, else the repository's Social preview; none if neither
+    version      the newest Release (native) or "v*" tag; else "version" as written
 
 Repositories are skipped when they are forks, archived, private, named ".github",
 or carry the topic "profile-hide". kobito-workspace comes first, the rest follow
-in repository-name order.
-
-When no app is found (for example before any repository has the topic), the
-README is left as it is.
+in repository-name order. When no app is found (for example before any
+repository has the topic), the README is left as it is.
 
 Sources can be swapped so the script runs without the network:
 
@@ -40,6 +38,7 @@ import re
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -53,12 +52,28 @@ LIST_URL = os.environ.get(
 MANIFEST_BASE = os.environ.get(
     "KOBITO_APP_MANIFEST_BASE", f"https://raw.githubusercontent.com/{ORG}"
 ).rstrip("/")
+# Images are linked from the README, so they always point at the public files.
+IMAGE_BASE = f"https://raw.githubusercontent.com/{ORG}"
 README = Path(__file__).resolve().parent.parent / "profile" / "README.md"
 START = "<!-- TOOLS:START -->"
 END = "<!-- TOOLS:END -->"
 HIDE_TOPIC = "profile-hide"
 HUB = "workspace"
+
+# The repository shape (APP_PACKAGE.md sections 0 and 2), read the same way as
+# kobito-workspace's kit.manifest and kit.package.
 MANIFEST_LIMIT = 64 * 1024
+APP_ID = re.compile(r"^[a-z][a-z0-9-]{0,39}$")
+REPOSITORY = re.compile(r"^[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9._-]{1,100}$")
+FILE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$")
+APP_VERSION = re.compile(r"^\d+(\.\d+){0,2}([-+][0-9A-Za-z.-]+)?$")
+TAGLINE_MAX = 80
+ICON = "kobito/icon.svg"
+ICON_PNG = "kobito/icon-1024.png"
+SCREENSHOT = "kobito/screenshot.png"
+IMAGE_LIMITS = {ICON: 256 * 1024, ICON_PNG: 2 * 1024 * 1024, SCREENSHOT: 2 * 1024 * 1024}
+CARD_ITEMS = ("app", "name", "name_en", "tagline", "tagline_en", "description", "description_en",
+              "kind", "version", "repository", "platforms")
 PLATFORMS = {"macos": "macOS", "windows": "Windows", "linux": "Linux"}
 KINDS = {"python": "Python", "native": "ネイティブ"}
 VERSION_TAG = re.compile(r"^v(\d+(?:\.\d+)*)$")
@@ -84,8 +99,16 @@ def fetch(url, accept="application/vnd.github+json", data=None):
         raise
 
 
+def _text(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
 def parse_manifest(text):
-    """Return the kobito-app.json dict, or None when it is missing or malformed."""
+    """Return the kobito-app.json dict, or None when it is missing or malformed.
+
+    Required items that are missing or wrong drop the whole file; optional items
+    that are wrong drop only that item.
+    """
     if not text or len(text.encode("utf-8")) > MANIFEST_LIMIT:
         return None
     try:
@@ -94,18 +117,49 @@ def parse_manifest(text):
         return None
     if not isinstance(m, dict) or m.get("format") != "kobito-app" or m.get("v") != 1:
         return None
-    if not (isinstance(m.get("app"), str) and re.fullmatch(r"[a-z][a-z0-9-]{0,39}", m["app"])):
+    contracts = m.get("contracts")
+    if not (isinstance(m.get("app"), str) and APP_ID.match(m["app"])) or not _text(m.get("name")):
         return None
-    if not (isinstance(m.get("name"), str) and m["name"].strip()):
+    if m.get("kind") not in KINDS:
         return None
-    if m.get("kind") not in KINDS or not isinstance(m.get("contracts"), int):
+    if not isinstance(contracts, int) or isinstance(contracts, bool) or contracts < 1:
         return None
-    for key in ("description", "repository"):
-        if not isinstance(m.get(key), str):
-            m.pop(key, None)
+    if m["kind"] == "python" and m.get("entry", "launch.py") != "launch.py":
+        return None
+    setup = m.get("setup", "setup.sh")
+    if not isinstance(setup, str) or not FILE_NAME.match(setup):
+        return None
+    for key in ("name_en", "description", "description_en"):
+        if key in m and not _text(m[key]):
+            m.pop(key)
+    for key in ("tagline", "tagline_en"):
+        if key in m and not (_text(m[key]) and len(m[key]) <= TAGLINE_MAX and "\n" not in m[key]):
+            m.pop(key)
+    if "version" in m and not (isinstance(m["version"], str) and APP_VERSION.match(m["version"])):
+        m.pop("version")
+    if "repository" in m and not (isinstance(m["repository"], str) and REPOSITORY.match(m["repository"])):
+        m.pop("repository")
     platforms = m.get("platforms")
     m["platforms"] = [p for p in platforms if p in PLATFORMS] if isinstance(platforms, list) else []
     return m
+
+
+def card(manifest, files):
+    """The app's card, as kit.package.AppPackage.card() gives it.
+
+    files maps the regular files in kobito/ ("kobito/<name>") to their size.
+    icon and screenshot are fixed-name paths in the repository, or None.
+    """
+    c = {key: manifest[key] for key in CARD_ITEMS if key in manifest}
+    usable = {p for p, size in files.items() if p in IMAGE_LIMITS and size <= IMAGE_LIMITS[p]}
+    # GitHub shows the PNG the same everywhere, so it comes before the SVG here.
+    c["icon"] = next((p for p in (ICON_PNG, ICON) if p in usable), None)
+    c["screenshot"] = SCREENSHOT if SCREENSHOT in usable else None
+    return c
+
+
+def tagline(c):
+    return c.get("tagline") or c.get("description") or ""
 
 
 def newest_tag(names):
@@ -129,13 +183,14 @@ class GitHub:
     def manifest(self, repo):
         return self.fetch(f"{MANIFEST_BASE}/{repo['name']}/{repo['default_branch']}/kobito-app.json")
 
-    def readme(self, repo):
-        return self.fetch(f"{API}/repos/{ORG}/{repo['name']}/readme",
-                          accept="application/vnd.github.raw") or ""
-
-    def icon_files(self, repo):
-        listing = self.fetch(f"{API}/repos/{ORG}/{repo['name']}/contents/assets/icon")
-        return [f["path"] for f in json.loads(listing) if f["type"] == "file"] if listing else []
+    def kobito_files(self, repo):
+        """{path: size} of the regular files in kobito/ on the default branch."""
+        ref = urllib.parse.quote(repo["default_branch"], safe="")
+        listing = self.fetch(f"{API}/repos/{ORG}/{repo['name']}/contents/kobito?ref={ref}")
+        items = json.loads(listing) if listing else []
+        if not isinstance(items, list):
+            return {}
+        return {f["path"]: f.get("size", 0) for f in items if f.get("type") == "file"}
 
     def latest_release(self, repo):
         release = self.fetch(f"{API}/repos/{ORG}/{repo['name']}/releases/latest")
@@ -170,7 +225,7 @@ class GitHub:
 class LocalFolder:
     """Reads app folders on this machine (each with kobito-app.json), for checking offline.
 
-    Images are left out: nothing tells what is on GitHub yet.
+    Images are left out: the README links to the files on GitHub, which may not be there yet.
     """
 
     def __init__(self, root):
@@ -193,11 +248,8 @@ class LocalFolder:
     def manifest(self, repo):
         return (self.folders[repo["name"]] / "kobito-app.json").read_text(encoding="utf-8")
 
-    def readme(self, repo):
-        return ""
-
-    def icon_files(self, repo):
-        return []
+    def kobito_files(self, repo):
+        return {}
 
     def latest_release(self, repo):
         return None
@@ -211,56 +263,45 @@ class LocalFolder:
         return None
 
 
-def readme_icon(text):
-    m = re.search(r'<img\s[^>]*src="([^"]+)"[^>]*align="right"', text)
-    return m.group(1) if m else None
+def image_url(repo, path):
+    return f"{IMAGE_BASE}/{repo['name']}/{urllib.parse.quote(repo['default_branch'])}/{path}"
 
 
-def pick_icon(files):
-    icons = [f for f in files if re.search(r"icon[^/]*\.png$", f, re.I)]
-    return sorted(icons, key=lambda f: ("1024" not in f, f))[0] if icons else None
+def escape(text):
+    return text.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def image_html(source, repo, title):
-    url, name, branch = repo["html_url"], repo["name"], repo["default_branch"]
-    banner = source.social_preview(repo)
-    if banner:
-        return f'<a href="{url}"><img src="{banner}" width="640" alt="{title}"></a>'
-    icon = readme_icon(source.readme(repo)) or pick_icon(source.icon_files(repo))
-    if not icon:
-        return ""
-    if not icon.startswith("http"):
-        icon = f"https://raw.githubusercontent.com/{ORG}/{name}/{branch}/{icon.lstrip('./')}"
-    return f'<a href="{url}"><img src="{icon}" width="96" alt="{title}"></a>'
-
-
-def latest_version(source, repo, kind):
+def latest_version(source, repo, c):
     url = repo["html_url"]
-    if kind == "native":
+    if c["kind"] == "native":
         tag = source.latest_release(repo)
         if tag:
             return f"[{tag}]({url}/releases/latest)"
     tag = newest_tag(source.tags(repo))
-    return f"[{tag}]({url}/tree/{tag})" if tag else "—"
+    if tag:
+        return f"[{tag}]({url}/tree/{tag})"
+    return c.get("version") or "—"
 
 
-def build_section(source, repo, manifest):
-    title = manifest["name"]
-    summary = manifest.get("description") or repo.get("description") or ""
-    platforms = " · ".join(PLATFORMS[p] for p in manifest["platforms"]) or "—"
-    parts = [f"### [{title}]({repo['html_url']})"]
-    image = image_html(source, repo, title)
-    if image:
-        parts.append(image)
-    if summary:
-        parts.append(summary)
-    parts.append(f"**種類:** {KINDS[manifest['kind']]}　**対応 OS:** {platforms}　"
-                 f"**最新版:** {latest_version(source, repo, manifest['kind'])}")
+def build_section(source, repo, c):
+    url, title = repo["html_url"], c["name"]
+    heading = f"### [{title}]({url})"
+    if c["icon"]:
+        heading = f'### <img src="{image_url(repo, c["icon"])}" width="32" height="32" alt=""> [{title}]({url})'
+    parts = [heading]
+    if tagline(c):
+        parts.append(tagline(c))
+    picture = image_url(repo, c["screenshot"]) if c["screenshot"] else source.social_preview(repo)
+    if picture:
+        parts.append(f'<a href="{url}"><img src="{picture}" width="640" alt="{escape(title)}"></a>')
+    platforms = " · ".join(PLATFORMS[p] for p in c.get("platforms", [])) or "—"
+    parts.append(f"**種類:** {KINDS[c['kind']]}　**対応 OS:** {platforms}　"
+                 f"**最新版:** {latest_version(source, repo, c)}")
     return "\n\n".join(parts)
 
 
 def collect(source, log=print):
-    """Return [(repo, manifest)] in display order."""
+    """Return [(repo, card)] in display order."""
     apps = []
     for repo in source.repositories():
         if (repo.get("fork") or repo.get("archived") or repo.get("private")
@@ -270,7 +311,7 @@ def collect(source, log=print):
         if manifest is None:
             log(f"skip {repo['name']}: kobito-app.json が読めないか、形が違います")
             continue
-        apps.append((repo, manifest))
+        apps.append((repo, card(manifest, source.kobito_files(repo))))
     apps.sort(key=lambda a: (a[1]["app"] != HUB, a[0]["name"].lower()))
     return apps
 
@@ -278,7 +319,7 @@ def collect(source, log=print):
 def render(source, log=print):
     """Return (lineup markdown, app count)."""
     apps = collect(source, log)
-    return "\n\n".join(build_section(source, r, m) for r, m in apps), len(apps)
+    return "\n\n".join(build_section(source, r, c) for r, c in apps), len(apps)
 
 
 def replace_lineup(content, body):
