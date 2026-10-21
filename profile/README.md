@@ -31,13 +31,13 @@ PopNote! は、押したらポンッと出てきてすぐに書ける macOS 用�
 
 **対応 OS:** macOS　**最新版:** [v0.2.1](https://github.com/kobito-tools/PopNote/releases/latest)
 
-### [Pastephant](https://github.com/kobito-tools/Pastephant)
+### [Pastephant](https://github.com/kobito-tools/CrokClip)
 
-<a href="https://github.com/kobito-tools/Pastephant"><img src="https://repository-images.githubusercontent.com/1394512727/a9d82b04-6e17-4448-9d98-bb04be6edd1d" width="640" alt="Pastephant"></a>
+<a href="https://github.com/kobito-tools/CrokClip"><img src="https://repository-images.githubusercontent.com/1394512727/a9d82b04-6e17-4448-9d98-bb04be6edd1d" width="640" alt="Pastephant"></a>
 
 Pastephant は、コピーした物を忘れない象の、macOS 用クリップボード履歴アプリです。
 
-**対応 OS:** macOS　**最新版:** [v0.1.0](https://github.com/kobito-tools/Pastephant/releases/latest)
+**対応 OS:** macOS　**最新版:** [v0.1.0](https://github.com/kobito-tools/CrokClip/releases/latest)
 <!-- TOOLS:END -->
 
 ## 組み合わせて使う
