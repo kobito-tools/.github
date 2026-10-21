@@ -31,11 +31,11 @@ PopNote! は、押したらポンッと出てきてすぐに書ける macOS 用�
 
 **対応 OS:** macOS　**最新版:** —
 
-### [Pastephant](https://github.com/kobito-tools/Pastephant)
+### [InGoodPaste!](https://github.com/kobito-tools/InGoodPaste)
 
-<a href="https://github.com/kobito-tools/Pastephant"><img src="https://repository-images.githubusercontent.com/1394512727/a9d82b04-6e17-4448-9d98-bb04be6edd1d" width="640" alt="Pastephant"></a>
+<a href="https://github.com/kobito-tools/InGoodPaste"><img src="https://repository-images.githubusercontent.com/1394512727/a9d82b04-6e17-4448-9d98-bb04be6edd1d" width="640" alt="InGoodPaste!"></a>
 
-Pastephant は、コピーした物を忘れない象の、macOS 用クリップボード履歴アプリです。`⌘C` でコピーした文字・画像・ファイル・パワポの図形などを元の形のまま覚えておき、`⌥⌘V` で画面の端から呼び出して貼れます。貼る前の変換、タグ、定型文、数式画像、画像の文字認識、順番に貼るペーストスタックもそろっています。
+InGoodPaste! は、コック帽の小人が味見してから貼ってくれる、macOS 用クリップボード履歴アプリです。`⌘C` でコピーした文字・画像・ファイル・パワポの図形などを元の形のまま覚えておき、`⌥⌘V` で画面の端から呼び出して貼れます。貼る前の変換、タグ、定型文、数式画像、画像の文字認識、順番に貼るペーストスタックもそろっています。
 
 **対応 OS:** macOS　**最新版:** —
 <!-- TOOLS:END -->
@@ -44,7 +44,7 @@ Pastephant は、コピーした物を忘れない象の、macOS 用クリップ
 
 - **[OpenSesame!](https://github.com/kobito-tools/OpenSesame)** にほかのツールを登録すると、キーを押すだけで呼び出せます。
 - **[PopNote!](https://github.com/kobito-tools/PopNote)** の保存先を **[Tomelet](https://github.com/kobito-tools/Tomelet)** の基準パスにすると、メモが Tomelet のカレンダーや横断検索に並びます。
-- Tomelet・PopNote!・**[Pastephant](https://github.com/kobito-tools/Pastephant)** はタグを共有しているので、どのツールで作ったタグもほかのツールで使えます。
+- Tomelet・PopNote!・**[InGoodPaste!](https://github.com/kobito-tools/InGoodPaste)** はタグを共有しているので、どのツールで作ったタグもほかのツールで使えます。
 
 ---
 
