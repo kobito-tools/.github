@@ -2,50 +2,85 @@
 
 毎日の作業を、ちょっとだけ楽にする小さな道具たち。
 
-kobito-tools は、macOS / Windows 向けのデスクトップツールをつくっているプロジェクトです。どのツールも単体で使えて、組み合わせるともっと便利になります。
+kobito-tools は、小人（kobito）のように手を貸してくれる、デスクトップ用の小さなアプリのシリーズです。
 
-## ツール一覧
+## 考え方
+
+- **どのアプリも単体で使えます。** ほしいアプリだけを入れて、ふつうのアプリとして開けます。
+- **[kobito-workspace](https://github.com/kobito-tools/kobito-workspace) に並べると、1つのウインドウで使えます。** 入れたアプリが workspace に並び、切り替えながら使えて、横断検索もできます。
+- **アプリは、決まりを守れば誰でも足せます。** リポジトリの直下に目印 `kobito-app.json` を置き、GitHub の topic `kobito-app` を付けると、workspace と下の一覧に並びます。決まりは kobito-workspace の [docs/APP_PACKAGE.md](https://github.com/kobito-tools/kobito-workspace/blob/main/docs/APP_PACKAGE.md) にあります。
+
+## 入れ方
+
+シリーズをまとめて入れるときは、ターミナルで次を動かします。一覧から入れたいアプリを選べます。
+
+```bash
+zsh -c "$(curl -fsSL https://raw.githubusercontent.com/kobito-tools/kobito-workspace/main/install.sh)"
+```
+
+アプリを1つずつ入れるときは、各アプリの README を見てください。CorkClip・OpenSesame! などのネイティブのアプリは、[Homebrew](https://github.com/kobito-tools/homebrew-tap) でも入れられます。
+
+## アプリ一覧
 
 <!-- TOOLS:START -->
+<!-- 今は、手元のフォルダの kobito-app.json から作った一覧です（画像なし）。scripts/update_profile.py を動かすと、GitHub から作った一覧に置き換わります。 -->
+### [kobito-workspace](https://github.com/kobito-tools/kobito-workspace)
+
+各アプリを並べる枠、HOME、横断検索
+
+**種類:** Python　**対応 OS:** macOS　**最新版:** —
+
+### [CorkClip](https://github.com/kobito-tools/CorkClip)
+
+コピーした物をピンで留めるように取っておく、クリップボード履歴
+
+**種類:** ネイティブ　**対応 OS:** macOS　**最新版:** [v0.1.0](https://github.com/kobito-tools/CorkClip/tree/v0.1.0)
+
+### [Daycierge](https://github.com/kobito-tools/Daycierge)
+
+予定・Todo・時間割・作業の記録・タイマーを1つにまとめたアプリ
+
+**種類:** Python　**対応 OS:** macOS · Windows　**最新版:** —
+
+### [Filepantry](https://github.com/kobito-tools/Filepantry)
+
+ディスク全体のファイラーに、書籍・文書の管理とダウンロードの振り分けを組み合わせたアプリ
+
+**種類:** Python　**対応 OS:** macOS · Windows　**最新版:** —
+
+### [GitTrain](https://github.com/kobito-tools/GitTrain)
+
+Git の履歴を、マス目の地面に敷いた線路と電車で見せる Git の GUI
+
+**種類:** Python　**対応 OS:** macOS　**最新版:** —
+
 ### [OpenSesame!](https://github.com/kobito-tools/OpenSesame)
 
-<a href="https://github.com/kobito-tools/OpenSesame"><img src="https://repository-images.githubusercontent.com/1382855232/03a62c13-b261-42ac-898c-e7c8617d9ca8" width="640" alt="OpenSesame!"></a>
+キーを押している間だけ出るランチャー
 
-OpenSesame! は、キーを押している間だけ表示される macOS / Windows 用のランチャーです。
-
-**対応 OS:** macOS · Windows　**最新版:** [v0.1.4](https://github.com/kobito-tools/OpenSesame/releases/latest)
-
-### [Tomelet](https://github.com/kobito-tools/Tomelet)
-
-<a href="https://github.com/kobito-tools/Tomelet"><img src="https://repository-images.githubusercontent.com/1385155806/58b1cee8-91a4-4ee8-bfa3-809dcb5ddeef" width="640" alt="Tomelet"></a>
-
-Tomelet は、日記・時間割・Todo・関連ファイルを一括管理する、macOS / Windows 用の個人向け記録アプリです。
-
-**対応 OS:** macOS · Windows　**最新版:** [v0.1.1](https://github.com/kobito-tools/Tomelet/releases/latest)
+**種類:** ネイティブ　**対応 OS:** macOS · Windows　**最新版:** [v0.1.4](https://github.com/kobito-tools/OpenSesame/tree/v0.1.4)
 
 ### [PopNote!](https://github.com/kobito-tools/PopNote)
 
-<a href="https://github.com/kobito-tools/PopNote"><img src="https://repository-images.githubusercontent.com/1385164626/c451f484-88a4-4d0b-9806-b493c2dc53e4" width="640" alt="PopNote!"></a>
+押したらすぐ書けるメモと日記
 
-PopNote! は、押したらポンッと出てきてすぐに書ける macOS 用のクイックメモです。会議中などに思いついたことを、ランチャーからワンアクションで書き留められます。
+**種類:** Python　**対応 OS:** macOS · Windows　**最新版:** [v0.2.1](https://github.com/kobito-tools/PopNote/tree/v0.2.1)
 
-**対応 OS:** macOS　**最新版:** [v0.2.1](https://github.com/kobito-tools/PopNote/releases/latest)
+### [PyMaison](https://github.com/kobito-tools/PyMaison)
 
-### [InGoodPaste!](https://github.com/kobito-tools/InGoodPaste)
+uv のコマンドを、マンションのイラストで学ぶ GUI
 
-<a href="https://github.com/kobito-tools/InGoodPaste"><img src="https://repository-images.githubusercontent.com/1394512727/a9d82b04-6e17-4448-9d98-bb04be6edd1d" width="640" alt="InGoodPaste!"></a>
+**種類:** Python　**対応 OS:** macOS · Windows · Linux　**最新版:** —
 
-InGoodPaste! は、コック帽の小人が味見してから貼ってくれる、macOS 用クリップボード履歴アプリです。`⌘C` でコピーした文字・画像・ファイル・パワポの図形などを元の形のまま覚えておき、`⌥⌘V` で画面の端から呼び出して貼れます。貼る前の変換、タグ、定型文、数式画像、画像の文字認識、順番に貼るペーストスタックもそろっています。
+### [ScreenDresser](https://github.com/kobito-tools/ScreenDresser)
 
-**対応 OS:** macOS　**最新版:** [v0.1.0](https://github.com/kobito-tools/InGoodPaste/releases/latest)
+作業・ミーティング・発表などのモードを1クリックで切り替える、画面の着せ替え係
+
+**種類:** Python　**対応 OS:** macOS　**最新版:** —
 <!-- TOOLS:END -->
 
-## 組み合わせて使う
-
-- **[OpenSesame!](https://github.com/kobito-tools/OpenSesame)** にほかのツールを登録すると、キーを押すだけで呼び出せます。
-- **[PopNote!](https://github.com/kobito-tools/PopNote)** の保存先を **[Tomelet](https://github.com/kobito-tools/Tomelet)** の基準パスにすると、メモが Tomelet のカレンダーや横断検索に並びます。
-- Tomelet・PopNote!・**[InGoodPaste!](https://github.com/kobito-tools/InGoodPaste)** はタグを共有しているので、どのツールで作ったタグもほかのツールで使えます。
+以前の Pastephant を使っていた方は、CorkClip の README の「[Pastephant から乗り換える場合](https://github.com/kobito-tools/CorkClip#pastephant-から乗り換える場合)」を見てください。
 
 ---
 
-<sub>「ツール一覧」は GitHub Actions で各リポジトリの README から自動生成しています。</sub>
+<sub>「アプリ一覧」は、GitHub Actions が、topic `kobito-app` の付いたリポジトリの `kobito-app.json` から自動で作っています。</sub>
