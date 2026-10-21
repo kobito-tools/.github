@@ -42,7 +42,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-ORG = os.environ.get("KOBITO_GITHUB_ORG") or os.environ.get("ORG") or "kobito-tools"
+ORG = os.environ.get("KOBITO_GITHUB_ORG") or "kobito-tools"
 API = os.environ.get("KOBITO_GITHUB_API", "https://api.github.com").rstrip("/")
 WEB = os.environ.get("KOBITO_GITHUB_WEB", "https://github.com").rstrip("/")
 LIST_URL = os.environ.get(

@@ -6,7 +6,7 @@
 
 `profile/README.md` の `<!-- TOOLS:START -->` 〜 `<!-- TOOLS:END -->` の間は、[scripts/update_profile.py](scripts/update_profile.py) が自動で作ります。手で書き換えても上書きされるので、それ以外の部分を編集してください。
 
-GitHub Actions（[update-profile.yml](.github/workflows/update-profile.yml)）が毎日 0:00 (JST) に動きます。すぐに反映したいときは、Actions タブから「Update profile README」を手で動かしてください。動かす前に、テスト（`tests/`）を通します。
+GitHub Actions（[update-profile.yml](.github/workflows/update-profile.yml)）が毎日 0:00 (JST) と、スクリプト・テスト・ワークフローが `main` に入ったときに動きます。すぐに反映したいときは、Actions タブから「Update profile README」を手で動かしてください。動かす前に、テスト（`tests/`）を通します。
 
 ### 一覧に並ぶリポジトリ
 
