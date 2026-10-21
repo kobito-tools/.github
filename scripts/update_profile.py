@@ -139,8 +139,9 @@ def parse_manifest(text):
         m.pop("version")
     if "repository" in m and not (isinstance(m["repository"], str) and REPOSITORY.match(m["repository"])):
         m.pop("repository")
-    platforms = m.get("platforms")
-    m["platforms"] = [p for p in platforms if p in PLATFORMS] if isinstance(platforms, list) else []
+    if "platforms" in m:
+        platforms = m["platforms"]
+        m["platforms"] = [p for p in platforms if p in PLATFORMS] if isinstance(platforms, list) else []
     return m
 
 
