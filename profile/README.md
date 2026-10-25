@@ -15,14 +15,6 @@ OpenSesame! は、キーを押している間だけ表示される macOS / Windo
 
 **対応 OS:** macOS · Windows　**最新版:** [v0.1.4](https://github.com/kobito-tools/OpenSesame/releases/latest)
 
-### [Tomelet](https://github.com/kobito-tools/Tomelet)
-
-<a href="https://github.com/kobito-tools/Tomelet"><img src="https://repository-images.githubusercontent.com/1385155806/58b1cee8-91a4-4ee8-bfa3-809dcb5ddeef" width="640" alt="Tomelet"></a>
-
-Tomelet は、日記・時間割・Todo・関連ファイルを一括管理する、macOS / Windows 用の個人向け記録アプリです。
-
-**対応 OS:** macOS · Windows　**最新版:** [v0.1.1](https://github.com/kobito-tools/Tomelet/releases/latest)
-
 ### [PopNote!](https://github.com/kobito-tools/PopNote)
 
 <a href="https://github.com/kobito-tools/PopNote"><img src="https://repository-images.githubusercontent.com/1385164626/c451f484-88a4-4d0b-9806-b493c2dc53e4" width="640" alt="PopNote!"></a>
