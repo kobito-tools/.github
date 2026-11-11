@@ -161,12 +161,12 @@ class RenderTest(unittest.TestCase):
                 kobito_url("Sample"): listing("icon.svg", "icon-1024.png", "screenshot.png"),
                 f"{API}/repos/{ORG}/Sample/tags?per_page=100&page=1":
                     json.dumps([{"name": "v0.1.0"}, {"name": "v0.10.0"}, {"name": "contracts-v1"}]),
-                # Native: no tagline, no screenshot (the Social preview is used), a Release.
+                # Native: no tagline, no screenshot (the Social preview is used), a tag.
                 manifest_url("SampleNative"): manifest(
                     "sample-native", "Sample Native", kind="native", description="説明のための架空の常駐アプリ",
                     version="1.0.0", platforms=["macos"]),
                 kobito_url("SampleNative"): listing("icon.svg", "icon-1024.png"),
-                f"{API}/repos/{ORG}/SampleNative/releases/latest": json.dumps({"tag_name": "v1.0.0"}),
+                f"{API}/repos/{ORG}/SampleNative/tags?per_page=100&page=1": json.dumps([{"name": "v1.0.0"}]),
                 f"https://github.com/{ORG}/SampleNative":
                     '<meta property="og:image" content="https://repository-images.githubusercontent.com/1/abc">',
                 # The hub: no images yet, no tags; the manifest's version is shown as it is.
@@ -197,7 +197,7 @@ class RenderTest(unittest.TestCase):
             f'<a href="https://github.com/{ORG}/SampleNative">'
             '<img src="https://repository-images.githubusercontent.com/1/abc" width="640" alt="Sample Native"></a>',
             f"**種類:** ネイティブ　**対応 OS:** macOS　"
-            f"**最新版:** [v1.0.0](https://github.com/{ORG}/SampleNative/releases/latest)",
+            f"**最新版:** [v1.0.0](https://github.com/{ORG}/SampleNative/tree/v1.0.0)",
         ]))
         self.assertEqual(python, "\n\n".join([
             f'<img src="{RAW}/Sample/main/kobito/icon-1024.png" width="32" height="32" alt="">'
@@ -217,7 +217,7 @@ class RenderTest(unittest.TestCase):
         # The Social preview is only looked up when there is no screenshot.
         self.assertNotIn(f"https://github.com/{ORG}/Sample", fetch.urls)
 
-    def test_native_without_release_falls_back_to_tags(self):
+    def test_native_uses_tags_not_releases(self):
         fetch = site([repo("SampleNative")], {
             manifest_url("SampleNative"): manifest("sample-native", "Sample Native", kind="native"),
             f"{API}/repos/{ORG}/SampleNative/tags?per_page=100&page=1": json.dumps([{"name": "v0.1.4"}]),
