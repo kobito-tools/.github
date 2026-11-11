@@ -221,9 +221,13 @@ class RenderTest(unittest.TestCase):
         fetch = site([repo("SampleNative")], {
             manifest_url("SampleNative"): manifest("sample-native", "Sample Native", kind="native"),
             f"{API}/repos/{ORG}/SampleNative/tags?per_page=100&page=1": json.dumps([{"name": "v0.1.4"}]),
+            # A leftover Release must not win over the tags.
+            f"{API}/repos/{ORG}/SampleNative/releases/latest": json.dumps({"tag_name": "v9.9.9"}),
         })
         body, _ = up.render(up.GitHub(fetch), lambda s: None)
         self.assertIn(f"[v0.1.4](https://github.com/{ORG}/SampleNative/tree/v0.1.4)", body)
+        self.assertNotIn("v9.9.9", body)
+        self.assertFalse(any("/releases" in url for url in fetch.urls))
         self.assertTrue(body.startswith("### [Sample Native]"))  # no icon, no tagline
         self.assertEqual(body.count("\n\n"), 1)
 
