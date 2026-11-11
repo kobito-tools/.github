@@ -28,7 +28,7 @@ GitHub Actions（[update-profile.yml](.github/workflows/update-profile.yml)）�
 | ひとこと | `kobito-app.json` の `tagline`（1行、80文字まで） | `description`。それも無ければ出さない |
 | 画像 | 既定のブランチの `kobito/screenshot.png`（2 MB まで） | リポジトリの Social preview（1280×640）。それも無ければ出さない |
 | 種類・対応 OS | `kobito-app.json` の `kind`（Python・ネイティブ）と `platforms` | 対応 OS は「—」 |
-| 最新版 | ネイティブのアプリは最新の Release。Python のアプリは Release を作らないので、いちばん新しい `v…` のタグ（Release の無いネイティブのアプリもタグ） | `kobito-app.json` の `version` をそのまま（リンクなし）。それも無ければ「—」 |
+| 最新版 | いちばん新しい `v…` のタグ（どのアプリも Release では配らず、ソースを入手して `./setup.sh` で入れる） | `kobito-app.json` の `version` をそのまま（リンクなし）。それも無ければ「—」 |
 
 - `kobito/` の中にあるかどうかは、GitHub の API（`contents/kobito`）の一覧で調べます。ふつうのファイルだけを使い、シンボリックリンク・大きすぎるファイル・決まっていない名前のファイルは使いません。
 - アイコンは、§6 では `icon.svg` が先ですが、ここでは `icon-1024.png` を先に使います（GitHub の README では、PNG がどこでも同じに見えるため）。
@@ -55,6 +55,6 @@ python3 -m unittest discover -s tests        # テスト（ネットにつなが
 | `KOBITO_GITHUB_ORG` | `kobito-tools` | organization |
 | `KOBITO_APP_LIST_URL` | `https://api.github.com/search/repositories?q=org:<organization>+topic:kobito-app&per_page=100` | 一覧の取得先（`file://…` も指せる） |
 | `KOBITO_APP_MANIFEST_BASE` | `https://raw.githubusercontent.com/<organization>` | `<ここ>/<リポジトリ名>/<ブランチ>/kobito-app.json` を読む |
-| `KOBITO_GITHUB_API` | `https://api.github.com` | `kobito/` の一覧・Release・タグ・GraphQL の取得先 |
+| `KOBITO_GITHUB_API` | `https://api.github.com` | `kobito/` の一覧・タグ・GraphQL の取得先 |
 | `KOBITO_GITHUB_WEB` | `https://github.com` | トークンが無いときに Social preview を読むページ |
 | `GITHUB_TOKEN` | なし | あれば API に使う（Actions では自動で入る） |
