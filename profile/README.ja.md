@@ -10,7 +10,7 @@ kobito-tools は、小人（kobito）のように手を貸してくれる、デ�
 
 - **どのアプリも単体で使えます。** ほしいアプリだけを入れて、ふつうのアプリとして開けます。
 - **[kobito-workspace](https://github.com/kobito-tools/kobito-workspace) に並べると、1つのウインドウで使えます。** 入れたアプリが workspace に並び、切り替えながら使えて、横断検索もできます。
-- **どのアプリも、同じ形のリポジトリです。** 直下に名乗り `kobito-app.json` を、`kobito/` にアイコンを、`assets/social-preview.png` に紹介の画像を、決まった名前で置きます。`kobito-app.json` を持つ公開リポジトリは、下の一覧に自動で並びます。決まりは kobito-workspace の [APP_PACKAGE.md](https://github.com/kobito-tools/kobito-workspace/blob/main/kobito_workspace/kit/docs/APP_PACKAGE.md) にあります。
+- **どのアプリも、同じ形のリポジトリです。** 直下に名乗り `kobito-app.json` を、`kobito/` にアイコンを、`assets/social-preview.png`（日本語は `social-preview.ja.png`）に紹介の画像を、決まった名前で置きます。`kobito-app.json` を持つ公開リポジトリは、下の一覧に自動で並びます。決まりは kobito-workspace の [APP_PACKAGE.md](https://github.com/kobito-tools/kobito-workspace/blob/main/kobito_workspace/kit/docs/APP_PACKAGE.md) にあります。
 
 ## 入れ方
 
@@ -52,4 +52,4 @@ zsh -c "$(curl -fsSL https://raw.githubusercontent.com/kobito-tools/kobito-works
 
 ---
 
-<sub>「アプリ一覧」は、GitHub Actions が、`kobito-app.json` を持つ公開リポジトリの紹介のカード（`kobito-app.json`・`kobito/` のアイコン・`assets/social-preview.png`）から自動で作っています。</sub>
+<sub>「アプリ一覧」は、GitHub Actions が、`kobito-app.json` を持つ公開リポジトリの紹介のカード（`kobito-app.json`・`kobito/` のアイコン・`assets/social-preview.ja.png`）から自動で作っています。</sub>

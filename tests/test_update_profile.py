@@ -175,7 +175,7 @@ class RenderTest(unittest.TestCase):
                     description="説明のための架空のメモのアプリ", version="0.1.0",
                     platforms=["macos", "windows"]),
                 kobito_url("Sample"): listing("icon.svg", "icon-1024.png", "screenshot.png"),
-                kobito_url("Sample", "assets"): assets("social-preview.png", "other.svg"),
+                kobito_url("Sample", "assets"): assets("social-preview.png", "social-preview.ja.png", "other.svg"),
                 f"{API}/repos/{ORG}/Sample/tags?per_page=100&page=1":
                     json.dumps([{"name": "v0.1.0"}, {"name": "v0.10.0"}, {"name": "contracts-v1"}]),
                 # Native: no tagline, no assets/social-preview.png (the Social preview is used), a tag.
@@ -221,7 +221,7 @@ class RenderTest(unittest.TestCase):
             f" [Sample](https://github.com/{ORG}/Sample)",
             "思いついたことを、すぐ書きとめる",
             f'<a href="https://github.com/{ORG}/Sample">'
-            f'<img src="{RAW}/Sample/main/assets/social-preview.png" width="640" alt="Sample"></a>',
+            f'<img src="{RAW}/Sample/main/assets/social-preview.ja.png" width="640" alt="Sample"></a>',
             f"**種類:** Python　**対応 OS:** macOS · Windows　"
             f"**最新版:** [v0.10.0](https://github.com/{ORG}/Sample/tree/v0.10.0)",
         ]))
@@ -232,7 +232,8 @@ class RenderTest(unittest.TestCase):
         self.assertIn("\n\nA made-up resident app\n\n", en_native)
         self.assertIn("**Type:** Native", en_native)
         self.assertIn("\n\n思いついたことを、すぐ書きとめる\n\n", en_python)
-        self.assertIn(f"{RAW}/Sample/main/assets/social-preview.png", en_python)
+        self.assertIn(f"{RAW}/Sample/main/assets/social-preview.png\"", en_python)
+        self.assertNotIn("social-preview.ja.png", bodies["en"])
 
         self.assertNotIn("Hidden", bodies["ja"])
         self.assertNotIn("description", bodies["ja"])  # GitHub's Description is not part of the card
@@ -244,6 +245,27 @@ class RenderTest(unittest.TestCase):
         self.assertNotIn(f"https://github.com/{ORG}/Sample", fetch.urls)
         self.assertEqual(fetch.urls.count(f"https://github.com/{ORG}/SampleNative"), 1)
         self.assertNotIn(f"{RAW}/Sample/main/kobito/screenshot.png", bodies["ja"])
+
+    def test_japanese_uses_english_image_when_it_has_none(self):
+        fetch = site([repo("Sample")], {
+            manifest_url("Sample"): manifest("sample", "Sample"),
+            kobito_url("Sample", "assets"): assets("social-preview.png"),
+        })
+        bodies, _ = up.render(up.GitHub(fetch), lambda s: None, ("ja", "en"))
+        for lang in ("ja", "en"):
+            self.assertIn(f'src="{RAW}/Sample/main/assets/social-preview.png"', bodies[lang])
+        self.assertNotIn(f"https://github.com/{ORG}/Sample", fetch.urls)
+
+    def test_only_japanese_image_leaves_english_on_social_preview(self):
+        fetch = site([repo("Sample")], {
+            manifest_url("Sample"): manifest("sample", "Sample"),
+            kobito_url("Sample", "assets"): assets("social-preview.ja.png"),
+            f"https://github.com/{ORG}/Sample":
+                '<meta property="og:image" content="https://repository-images.githubusercontent.com/3/og">',
+        })
+        bodies, _ = up.render(up.GitHub(fetch), lambda s: None, ("ja", "en"))
+        self.assertIn(f'src="{RAW}/Sample/main/assets/social-preview.ja.png"', bodies["ja"])
+        self.assertIn('src="https://repository-images.githubusercontent.com/3/og"', bodies["en"])
 
     def test_too_large_social_preview_falls_back(self):
         fetch = site([repo("Sample")], {
