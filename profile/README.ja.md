@@ -29,7 +29,7 @@ zsh -c "$(curl -fsSL https://raw.githubusercontent.com/kobito-tools/kobito-works
 
 コピーした物を、コルクボードに留めておく
 
-<a href="https://github.com/kobito-tools/CrokClip"><img src="https://raw.githubusercontent.com/kobito-tools/CrokClip/main/assets/social-preview.png" width="640" alt="CorkClip"></a>
+<a href="https://github.com/kobito-tools/CrokClip"><img src="https://raw.githubusercontent.com/kobito-tools/CrokClip/main/assets/social-preview.ja.png" width="640" alt="CorkClip"></a>
 
 **種類:** ネイティブ　**対応 OS:** macOS　**最新版:** [v0.2.0](https://github.com/kobito-tools/CrokClip/tree/v0.2.0)
 
@@ -40,14 +40,6 @@ zsh -c "$(curl -fsSL https://raw.githubusercontent.com/kobito-tools/kobito-works
 <a href="https://github.com/kobito-tools/OpenSesame"><img src="https://repository-images.githubusercontent.com/1382855232/03a62c13-b261-42ac-898c-e7c8617d9ca8" width="640" alt="OpenSesame!"></a>
 
 **種類:** ネイティブ　**対応 OS:** macOS · Windows　**最新版:** [v1.0.0](https://github.com/kobito-tools/OpenSesame/tree/v1.0.0)
-
-### <img src="https://raw.githubusercontent.com/kobito-tools/PopNote/main/kobito/icon-1024.png" width="32" height="32" alt=""> [PopNote!](https://github.com/kobito-tools/PopNote)
-
-ポンッと開いて、すぐ書けるメモと日記
-
-<a href="https://github.com/kobito-tools/PopNote"><img src="https://repository-images.githubusercontent.com/1385164626/c451f484-88a4-4d0b-9806-b493c2dc53e4" width="640" alt="PopNote!"></a>
-
-**種類:** Python　**対応 OS:** macOS · Windows　**最新版:** [v0.3.0](https://github.com/kobito-tools/PopNote/tree/v0.3.0)
 <!-- TOOLS:END -->
 
 ---

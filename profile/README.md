@@ -40,14 +40,6 @@ Hold a key and the door to your apps and files opens
 <a href="https://github.com/kobito-tools/OpenSesame"><img src="https://repository-images.githubusercontent.com/1382855232/03a62c13-b261-42ac-898c-e7c8617d9ca8" width="640" alt="OpenSesame!"></a>
 
 **Type:** Native &nbsp;·&nbsp; **Platforms:** macOS · Windows &nbsp;·&nbsp; **Latest:** [v1.0.0](https://github.com/kobito-tools/OpenSesame/tree/v1.0.0)
-
-### <img src="https://raw.githubusercontent.com/kobito-tools/PopNote/main/kobito/icon-1024.png" width="32" height="32" alt=""> [PopNote!](https://github.com/kobito-tools/PopNote)
-
-Pop it open and start writing notes and a diary
-
-<a href="https://github.com/kobito-tools/PopNote"><img src="https://repository-images.githubusercontent.com/1385164626/c451f484-88a4-4d0b-9806-b493c2dc53e4" width="640" alt="PopNote!"></a>
-
-**Type:** Python &nbsp;·&nbsp; **Platforms:** macOS · Windows &nbsp;·&nbsp; **Latest:** [v0.3.0](https://github.com/kobito-tools/PopNote/tree/v0.3.0)
 <!-- TOOLS:END -->
 
 ---
