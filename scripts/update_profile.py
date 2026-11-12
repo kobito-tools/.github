@@ -12,7 +12,7 @@ branch. Nothing from the repositories is run.
     tagline      "tagline", else "description"; none if neither
     kind         "kind" (Python / ネイティブ), with "platforms"
     image        kobito/screenshot.png, else the repository's Social preview; none if neither
-    version      the newest Release (native) or "v*" tag; else "version" as written
+    version      the newest "v*" tag (no app is distributed as a Release); else "version" as written
 
 Repositories are skipped when they are forks, archived, private, named ".github",
 or carry the topic "profile-hide". kobito-workspace comes first, the rest follow
@@ -193,10 +193,6 @@ class GitHub:
             return {}
         return {f["path"]: f.get("size", 0) for f in items if f.get("type") == "file"}
 
-    def latest_release(self, repo):
-        release = self.fetch(f"{API}/repos/{ORG}/{repo['name']}/releases/latest")
-        return json.loads(release)["tag_name"] if release else None
-
     def tags(self, repo):
         names, page = [], 1
         while True:
@@ -252,9 +248,6 @@ class LocalFolder:
     def kobito_files(self, repo):
         return {}
 
-    def latest_release(self, repo):
-        return None
-
     def tags(self, repo):
         out = subprocess.run(["git", "-C", str(self.folders[repo["name"]]), "tag"],
                              capture_output=True, text=True)
@@ -274,10 +267,6 @@ def escape(text):
 
 def latest_version(source, repo, c):
     url = repo["html_url"]
-    if c["kind"] == "native":
-        tag = source.latest_release(repo)
-        if tag:
-            return f"[{tag}]({url}/releases/latest)"
     tag = newest_tag(source.tags(repo))
     if tag:
         return f"[{tag}]({url}/tree/{tag})"

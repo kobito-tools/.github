@@ -18,7 +18,7 @@ kobito-tools は、小人（kobito）のように手を貸してくれる、デ�
 zsh -c "$(curl -fsSL https://raw.githubusercontent.com/kobito-tools/kobito-workspace/main/install.sh)"
 ```
 
-アプリを1つずつ入れるときは、各アプリの README を見てください。CorkClip・OpenSesame! などのネイティブのアプリは、[Homebrew](https://github.com/kobito-tools/homebrew-tap) でも入れられます。
+アプリを1つずつ入れるときは、そのアプリのソースを入手して（`git clone` か「Code → Download ZIP」）、フォルダの中で `./setup.sh` を実行します。詳しくは各アプリの README を見てください。インストーラー（dmg など）は配っていません。
 
 ## アプリ一覧
 
