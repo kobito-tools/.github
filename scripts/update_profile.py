@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
-"""Regenerate the app lineup in profile/README.md.
+"""Regenerate the app lineup in profile/README.md (English) and profile/README.ja.md.
 
-The lineup lists the org's repositories that carry the topic "kobito-app" and
-have a valid kobito-app.json at their root. Each app is shown as its card
+The lineup lists the org's public repositories that have a valid kobito-app.json
+at the root of their default branch. Each app is shown as its card
 (kobito-workspace's kobito_workspace/kit/docs/APP_PACKAGE.md, section 6), made
-only from kobito-app.json and the fixed-name images in kobito/ on the default
-branch. Nothing from the repositories is run.
+only from kobito-app.json and fixed-name images on the default branch. Nothing
+from the repositories is run.
 
     icon         kobito/icon-1024.png (kobito/icon.svg if there is no PNG); none if neither
-    name         "name"
-    tagline      "tagline", else "description"; none if neither
-    kind         "kind" (Python / ネイティブ), with "platforms"
-    image        kobito/screenshot.png, else the repository's Social preview; none if neither
+    name         "name_en" in English, "name" in Japanese (each falls back to the other)
+    tagline      "tagline_en" / "tagline", else "description_en" / "description"
+    kind         "kind" (Python / Native), with "platforms"
+    image        assets/social-preview.png in English, assets/social-preview.ja.png in Japanese
+                 (the English one if there is no Japanese one), else the custom Social preview
     version      the newest "v*" tag (no app is distributed as a Release); else "version" as written
 
 Repositories are skipped when they are forks, archived, private, named ".github",
 or carry the topic "profile-hide". kobito-workspace comes first, the rest follow
-in repository-name order. When no app is found (for example before any
-repository has the topic), the README is left as it is.
+in repository-name order. When no app is found, the READMEs are left as they are.
 
 Sources can be swapped so the script runs without the network:
 
     KOBITO_GITHUB_ORG         organization (default: kobito-tools)
-    KOBITO_APP_LIST_URL       search URL for the repository list (file:// works)
+    KOBITO_APP_LIST_URL       URL of the repository list, without the page number (file:// works)
     KOBITO_APP_MANIFEST_BASE  base for <base>/<repo>/<branch>/kobito-app.json
     KOBITO_GITHUB_API         REST/GraphQL base (default: https://api.github.com)
     KOBITO_GITHUB_WEB         web base used for og:image (default: https://github.com)
@@ -47,14 +47,16 @@ API = os.environ.get("KOBITO_GITHUB_API", "https://api.github.com").rstrip("/")
 WEB = os.environ.get("KOBITO_GITHUB_WEB", "https://github.com").rstrip("/")
 LIST_URL = os.environ.get(
     "KOBITO_APP_LIST_URL",
-    f"{API}/search/repositories?q=org:{ORG}+topic:kobito-app&per_page=100",
+    f"{API}/orgs/{ORG}/repos?type=public&per_page=100",
 )
 MANIFEST_BASE = os.environ.get(
     "KOBITO_APP_MANIFEST_BASE", f"https://raw.githubusercontent.com/{ORG}"
 ).rstrip("/")
 # Images are linked from the README, so they always point at the public files.
 IMAGE_BASE = f"https://raw.githubusercontent.com/{ORG}"
-README = Path(__file__).resolve().parent.parent / "profile" / "README.md"
+PROFILE = Path(__file__).resolve().parent.parent / "profile"
+# English is the main page (shown on the organization page); Japanese is linked from it.
+READMES = {"en": PROFILE / "README.md", "ja": PROFILE / "README.ja.md"}
 START = "<!-- TOOLS:START -->"
 END = "<!-- TOOLS:END -->"
 HIDE_TOPIC = "profile-hide"
@@ -72,10 +74,20 @@ ICON = "kobito/icon.svg"
 ICON_PNG = "kobito/icon-1024.png"
 SCREENSHOT = "kobito/screenshot.png"
 IMAGE_LIMITS = {ICON: 256 * 1024, ICON_PNG: 2 * 1024 * 1024, SCREENSHOT: 2 * 1024 * 1024}
+# The series' introduction image (1280x640), kept in each repository, one per language.
+SOCIAL_PREVIEW = "assets/social-preview.png"
+SOCIAL_PREVIEWS = {"en": [SOCIAL_PREVIEW], "ja": ["assets/social-preview.ja.png", SOCIAL_PREVIEW]}
+SOCIAL_PREVIEW_LIMIT = 2 * 1024 * 1024
 CARD_ITEMS = ("app", "name", "name_en", "tagline", "tagline_en", "description", "description_en",
               "kind", "version", "repository", "platforms")
 PLATFORMS = {"macos": "macOS", "windows": "Windows", "linux": "Linux"}
-KINDS = {"python": "Python", "native": "ネイティブ"}
+KINDS = {"python": "Python", "native": "Native"}
+LABELS = {
+    "en": {"kind": "Type", "platforms": "Platforms", "latest": "Latest",
+           "kinds": KINDS, "sep": " &nbsp;·&nbsp; "},
+    "ja": {"kind": "種類", "platforms": "対応 OS", "latest": "最新版",
+           "kinds": {"python": "Python", "native": "ネイティブ"}, "sep": "　"},
+}
 VERSION_TAG = re.compile(r"^v(\d+(?:\.\d+)*)$")
 
 
@@ -159,8 +171,17 @@ def card(manifest, files):
     return c
 
 
-def tagline(c):
-    return c.get("tagline") or c.get("description") or ""
+def name(c, lang="ja"):
+    if lang == "en":
+        return c.get("name_en") or c["name"]
+    return c["name"]
+
+
+def tagline(c, lang="ja"):
+    """The one-line introduction; the other language is used when this one has none."""
+    en = c.get("tagline_en") or c.get("description_en")
+    ja = c.get("tagline") or c.get("description")
+    return (en or ja or "") if lang == "en" else (ja or en or "")
 
 
 def newest_tag(names):
@@ -176,18 +197,29 @@ class GitHub:
         self.fetch = fetch
 
     def repositories(self):
-        text = self.fetch(LIST_URL)
-        if text is None:
-            raise RuntimeError(f"一覧を取り寄せられません: {LIST_URL}")
-        return json.loads(text).get("items", [])
+        repos, page = [], 1
+        while True:
+            url = f"{LIST_URL}{'&' if '?' in LIST_URL else '?'}page={page}"
+            text = self.fetch(url)
+            if text is None:
+                if page == 1:
+                    raise RuntimeError(f"一覧を取り寄せられません: {url}")
+                return repos
+            batch = json.loads(text)
+            if isinstance(batch, dict):  # the search API wraps the list in "items"
+                batch = batch.get("items", [])
+            repos += batch
+            if len(batch) < 100:
+                return repos
+            page += 1
 
     def manifest(self, repo):
         return self.fetch(f"{MANIFEST_BASE}/{repo['name']}/{repo['default_branch']}/kobito-app.json")
 
-    def kobito_files(self, repo):
-        """{path: size} of the regular files in kobito/ on the default branch."""
+    def kobito_files(self, repo, folder="kobito"):
+        """{path: size} of the regular files in folder (kobito/ or assets/) on the default branch."""
         ref = urllib.parse.quote(repo["default_branch"], safe="")
-        listing = self.fetch(f"{API}/repos/{ORG}/{repo['name']}/contents/kobito?ref={ref}")
+        listing = self.fetch(f"{API}/repos/{ORG}/{repo['name']}/contents/{folder}?ref={ref}")
         items = json.loads(listing) if listing else []
         if not isinstance(items, list):
             return {}
@@ -245,7 +277,7 @@ class LocalFolder:
     def manifest(self, repo):
         return (self.folders[repo["name"]] / "kobito-app.json").read_text(encoding="utf-8")
 
-    def kobito_files(self, repo):
+    def kobito_files(self, repo, folder="kobito"):
         return {}
 
     def tags(self, repo):
@@ -273,25 +305,46 @@ def latest_version(source, repo, c):
     return c.get("version") or "—"
 
 
-def build_section(source, repo, c):
-    url, title = repo["html_url"], c["name"]
+def pictures(source, repo, langs):
+    """{lang: image URL or None}: the language's file in assets/ on the default branch, else the
+    custom Social preview (looked up once, only when some language needs it)."""
+    files = source.kobito_files(repo, "assets")
+    usable = {p for p, size in files.items() if size <= SOCIAL_PREVIEW_LIMIT}
+    out, fallback = {}, ...
+    for lang in langs:
+        path = next((p for p in SOCIAL_PREVIEWS[lang] if p in usable), None)
+        if path:
+            out[lang] = image_url(repo, path)
+        else:
+            if fallback is ...:
+                fallback = source.social_preview(repo)
+            out[lang] = fallback
+    return out
+
+
+def build_section(repo, c, lang="ja"):
+    """One app's card as Markdown. c carries "pictures" and "latest" besides the card items."""
+    url, title, labels = repo["html_url"], name(c, lang), LABELS[lang]
     heading = f"### [{title}]({url})"
     if c["icon"]:
         heading = f'### <img src="{image_url(repo, c["icon"])}" width="32" height="32" alt=""> [{title}]({url})'
     parts = [heading]
-    if tagline(c):
-        parts.append(tagline(c))
-    picture = image_url(repo, c["screenshot"]) if c["screenshot"] else source.social_preview(repo)
+    if tagline(c, lang):
+        parts.append(tagline(c, lang))
+    picture = c.get("pictures", {}).get(lang)
     if picture:
         parts.append(f'<a href="{url}"><img src="{picture}" width="640" alt="{escape(title)}"></a>')
     platforms = " · ".join(PLATFORMS[p] for p in c.get("platforms", [])) or "—"
-    parts.append(f"**種類:** {KINDS[c['kind']]}　**対応 OS:** {platforms}　"
-                 f"**最新版:** {latest_version(source, repo, c)}")
+    parts.append(labels["sep"].join([
+        f"**{labels['kind']}:** {labels['kinds'][c['kind']]}",
+        f"**{labels['platforms']}:** {platforms}",
+        f"**{labels['latest']}:** {c.get('latest', '—')}",
+    ]))
     return "\n\n".join(parts)
 
 
-def collect(source, log=print):
-    """Return [(repo, card)] in display order."""
+def collect(source, log=print, langs=("ja",)):
+    """Return [(repo, card)] in display order; each card also carries "pictures" and "latest"."""
     apps = []
     for repo in source.repositories():
         if (repo.get("fork") or repo.get("archived") or repo.get("private")
@@ -301,15 +354,19 @@ def collect(source, log=print):
         if manifest is None:
             log(f"skip {repo['name']}: kobito-app.json が読めないか、形が違います")
             continue
-        apps.append((repo, card(manifest, source.kobito_files(repo))))
+        c = card(manifest, source.kobito_files(repo))
+        c["pictures"] = pictures(source, repo, langs)
+        c["latest"] = latest_version(source, repo, c)
+        apps.append((repo, c))
     apps.sort(key=lambda a: (a[1]["app"] != HUB, a[0]["name"].lower()))
     return apps
 
 
-def render(source, log=print):
-    """Return (lineup markdown, app count)."""
-    apps = collect(source, log)
-    return "\n\n".join(build_section(source, r, c) for r, c in apps), len(apps)
+def render(source, log=print, langs=("ja",)):
+    """Return ({lang: lineup markdown}, app count). Each repository is read once for all languages."""
+    apps = collect(source, log, langs)
+    bodies = {lang: "\n\n".join(build_section(r, c, lang) for r, c in apps) for lang in langs}
+    return bodies, len(apps)
 
 
 def replace_lineup(content, body):
@@ -320,7 +377,7 @@ def replace_lineup(content, body):
     return f"{head}{START}\n{body}\n{END}{tail}"
 
 
-def main(argv=None, readme=README):
+def main(argv=None, readmes=READMES):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--local", metavar="DIR", help="GitHub の代わりに DIR の直下のフォルダを読む")
     parser.add_argument("--dry-run", action="store_true", help="一覧を表示するだけで、README は書かない")
@@ -329,25 +386,30 @@ def main(argv=None, readme=README):
     source = LocalFolder(args.local) if args.local else GitHub()
     log = (lambda s: print(s, file=sys.stderr))
     try:
-        body, count = render(source, log)
+        bodies, count = render(source, log, tuple(readmes))
     except (RuntimeError, urllib.error.URLError, ValueError) as e:
         log(f"一覧を作れません: {e}")
         return 1
 
     if count == 0:
-        log("topic kobito-app と kobito-app.json を持つリポジトリが見つかりません。README はそのままにします。")
+        log("kobito-app.json を持つ公開リポジトリが見つかりません。README はそのままにします。")
         return 0
     if args.dry_run:
-        print(body)
+        for lang, body in bodies.items():
+            print(f"<!-- {lang} -->\n{body}\n")
         return 0
 
-    try:
-        content = replace_lineup(readme.read_text(encoding="utf-8"), body)
-    except ValueError as e:
-        log(f"{readme}: {e}")
-        return 1
-    readme.write_text(content, encoding="utf-8")
-    log(f"{count} apps written to {readme}")
+    # Check every README before writing any, so the languages never disagree.
+    contents = {}
+    for lang, readme in readmes.items():
+        try:
+            contents[readme] = replace_lineup(readme.read_text(encoding="utf-8"), bodies[lang])
+        except (OSError, ValueError) as e:
+            log(f"{readme}: {e}")
+            return 1
+    for readme, content in contents.items():
+        readme.write_text(content, encoding="utf-8")
+        log(f"{count} apps written to {readme}")
     return 0
 
 
