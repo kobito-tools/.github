@@ -10,7 +10,7 @@ kobito-tools is a series of small desktop apps that lend you a hand, like the li
 
 - **Every app works on its own.** Install only the apps you want, and open them like any other app.
 - **Line them up in [kobito-workspace](https://github.com/kobito-tools/kobito-workspace) to use them in one window.** The apps you install appear side by side in the workspace, where you can switch between them and search across them.
-- **Every app is a repository of the same shape.** It keeps its manifest `kobito-app.json` at the root, its icon in `kobito/`, and its introduction image at `assets/social-preview.png`, all under fixed names. Public repositories with a `kobito-app.json` appear in the list below automatically. The rules are in kobito-workspace's [APP_PACKAGE.md](https://github.com/kobito-tools/kobito-workspace/blob/main/kobito_workspace/kit/docs/APP_PACKAGE.md).
+- **Every app is a repository of the same shape.** It keeps its manifest `kobito-app.json` at the root, its icon in `kobito/`, and its introduction image at `assets/social-preview.png` (`social-preview.ja.png` for Japanese), all under fixed names. Public repositories with a `kobito-app.json` appear in the list below automatically. The rules are in kobito-workspace's [APP_PACKAGE.md](https://github.com/kobito-tools/kobito-workspace/blob/main/kobito_workspace/kit/docs/APP_PACKAGE.md).
 
 ## Install
 

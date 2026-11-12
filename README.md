@@ -26,13 +26,13 @@ GitHub Actions（[update-profile.yml](.github/workflows/update-profile.yml)）�
 | アイコン | 既定のブランチの `kobito/icon-1024.png`（2 MB まで） | `kobito/icon.svg`（256 KB まで）。それも無ければ出さない |
 | 名前 | 英語は `name_en`、日本語は `name` | もう一方の言語 |
 | ひとこと | 英語は `tagline_en`、日本語は `tagline`（1行、80文字まで） | 同じ言語の `description_en`・`description`、次にもう一方の言語。どれも無ければ出さない |
-| 画像 | 既定のブランチの `assets/social-preview.png`（1280×640、2 MB まで） | リポジトリの Settings で設定した Social preview。それも無ければ出さない |
+| 画像 | 既定のブランチの、英語は `assets/social-preview.png`、日本語は `assets/social-preview.ja.png`（1280×640、2 MB まで） | 日本語は英語の画像。それも無ければ、リポジトリの Settings で設定した Social preview。それも無ければ出さない |
 | 種類・対応 OS | `kobito-app.json` の `kind`（Python・ネイティブ）と `platforms` | 対応 OS は「—」 |
 | 最新版 | いちばん新しい `v…` のタグ（どのアプリも Release では配らず、ソースを入手して `./setup.sh` で入れる） | `kobito-app.json` の `version` をそのまま（リンクなし）。それも無ければ「—」 |
 
 - `kobito/`・`assets/` の中にあるかどうかは、GitHub の API（`contents/kobito`・`contents/assets`）の一覧で調べます。ふつうのファイルだけを使い、シンボリックリンク・大きすぎるファイル・決まっていない名前のファイルは使いません。
 - アイコンは、§6 では `icon.svg` が先ですが、ここでは `icon-1024.png` を先に使います（GitHub の README では、PNG がどこでも同じに見えるため）。
-- `kobito/screenshot.png` は使いません（一覧の画像は `assets/social-preview.png` にそろえた）。
+- `kobito/screenshot.png` は使いません（一覧の画像は `assets/social-preview*.png` にそろえた）。
 - 画像は、`https://raw.githubusercontent.com/<organization>/<リポジトリ名>/<ブランチ>/…` を README から指します。リンクは GitHub の実際のリポジトリ名で作ります（`kobito-app.json` の `repository` は使わない）。
 - GitHub のリポジトリの Description は使いません（カードの文字は `kobito-app.json` だけから作る）。
 

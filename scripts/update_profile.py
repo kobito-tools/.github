@@ -11,7 +11,8 @@ from the repositories is run.
     name         "name_en" in English, "name" in Japanese (each falls back to the other)
     tagline      "tagline_en" / "tagline", else "description_en" / "description"
     kind         "kind" (Python / Native), with "platforms"
-    image        assets/social-preview.png, else the repository's custom Social preview
+    image        assets/social-preview.png in English, assets/social-preview.ja.png in Japanese
+                 (the English one if there is no Japanese one), else the custom Social preview
     version      the newest "v*" tag (no app is distributed as a Release); else "version" as written
 
 Repositories are skipped when they are forks, archived, private, named ".github",
@@ -73,8 +74,9 @@ ICON = "kobito/icon.svg"
 ICON_PNG = "kobito/icon-1024.png"
 SCREENSHOT = "kobito/screenshot.png"
 IMAGE_LIMITS = {ICON: 256 * 1024, ICON_PNG: 2 * 1024 * 1024, SCREENSHOT: 2 * 1024 * 1024}
-# The series' introduction image (1280x640), kept in each repository.
+# The series' introduction image (1280x640), kept in each repository, one per language.
 SOCIAL_PREVIEW = "assets/social-preview.png"
+SOCIAL_PREVIEWS = {"en": [SOCIAL_PREVIEW], "ja": ["assets/social-preview.ja.png", SOCIAL_PREVIEW]}
 SOCIAL_PREVIEW_LIMIT = 2 * 1024 * 1024
 CARD_ITEMS = ("app", "name", "name_en", "tagline", "tagline_en", "description", "description_en",
               "kind", "version", "repository", "platforms")
@@ -303,16 +305,25 @@ def latest_version(source, repo, c):
     return c.get("version") or "—"
 
 
-def picture(source, repo):
-    """assets/social-preview.png on the default branch, else the custom Social preview, else None."""
+def pictures(source, repo, langs):
+    """{lang: image URL or None}: the language's file in assets/ on the default branch, else the
+    custom Social preview (looked up once, only when some language needs it)."""
     files = source.kobito_files(repo, "assets")
-    if files.get(SOCIAL_PREVIEW, SOCIAL_PREVIEW_LIMIT + 1) <= SOCIAL_PREVIEW_LIMIT:
-        return image_url(repo, SOCIAL_PREVIEW)
-    return source.social_preview(repo)
+    usable = {p for p, size in files.items() if size <= SOCIAL_PREVIEW_LIMIT}
+    out, fallback = {}, ...
+    for lang in langs:
+        path = next((p for p in SOCIAL_PREVIEWS[lang] if p in usable), None)
+        if path:
+            out[lang] = image_url(repo, path)
+        else:
+            if fallback is ...:
+                fallback = source.social_preview(repo)
+            out[lang] = fallback
+    return out
 
 
 def build_section(repo, c, lang="ja"):
-    """One app's card as Markdown. c carries "picture" and "latest" besides the card items."""
+    """One app's card as Markdown. c carries "pictures" and "latest" besides the card items."""
     url, title, labels = repo["html_url"], name(c, lang), LABELS[lang]
     heading = f"### [{title}]({url})"
     if c["icon"]:
@@ -320,8 +331,9 @@ def build_section(repo, c, lang="ja"):
     parts = [heading]
     if tagline(c, lang):
         parts.append(tagline(c, lang))
-    if c.get("picture"):
-        parts.append(f'<a href="{url}"><img src="{c["picture"]}" width="640" alt="{escape(title)}"></a>')
+    picture = c.get("pictures", {}).get(lang)
+    if picture:
+        parts.append(f'<a href="{url}"><img src="{picture}" width="640" alt="{escape(title)}"></a>')
     platforms = " · ".join(PLATFORMS[p] for p in c.get("platforms", [])) or "—"
     parts.append(labels["sep"].join([
         f"**{labels['kind']}:** {labels['kinds'][c['kind']]}",
@@ -331,8 +343,8 @@ def build_section(repo, c, lang="ja"):
     return "\n\n".join(parts)
 
 
-def collect(source, log=print):
-    """Return [(repo, card)] in display order; each card also carries "picture" and "latest"."""
+def collect(source, log=print, langs=("ja",)):
+    """Return [(repo, card)] in display order; each card also carries "pictures" and "latest"."""
     apps = []
     for repo in source.repositories():
         if (repo.get("fork") or repo.get("archived") or repo.get("private")
@@ -343,7 +355,7 @@ def collect(source, log=print):
             log(f"skip {repo['name']}: kobito-app.json が読めないか、形が違います")
             continue
         c = card(manifest, source.kobito_files(repo))
-        c["picture"] = picture(source, repo)
+        c["pictures"] = pictures(source, repo, langs)
         c["latest"] = latest_version(source, repo, c)
         apps.append((repo, c))
     apps.sort(key=lambda a: (a[1]["app"] != HUB, a[0]["name"].lower()))
@@ -352,7 +364,7 @@ def collect(source, log=print):
 
 def render(source, log=print, langs=("ja",)):
     """Return ({lang: lineup markdown}, app count). Each repository is read once for all languages."""
-    apps = collect(source, log)
+    apps = collect(source, log, langs)
     bodies = {lang: "\n\n".join(build_section(r, c, lang) for r, c in apps) for lang in langs}
     return bodies, len(apps)
 
