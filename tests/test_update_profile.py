@@ -47,8 +47,12 @@ class FakeFetch:
         return self.responses.get(url)
 
 
+def list_url(page=1):
+    return f"{up.LIST_URL}&page={page}"
+
+
 def site(repos, extra=None):
-    responses = {up.LIST_URL: json.dumps({"items": repos})}
+    responses = {list_url(): json.dumps(repos)}
     responses.update(extra or {})
     return FakeFetch(responses)
 
@@ -57,8 +61,12 @@ def manifest_url(name):
     return f"{up.MANIFEST_BASE}/{name}/main/kobito-app.json"
 
 
-def kobito_url(name):
-    return f"{API}/repos/{ORG}/{name}/contents/kobito?ref=main"
+def kobito_url(name, folder="kobito"):
+    return f"{API}/repos/{ORG}/{name}/contents/{folder}?ref=main"
+
+
+def assets(*files, size=1000):
+    return json.dumps([{"path": f"assets/{f}", "type": "file", "size": size} for f in files])
 
 
 class ParseManifestTest(unittest.TestCase):
@@ -108,6 +116,14 @@ class CardTest(unittest.TestCase):
         self.assertEqual(up.tagline({"tagline": "a", "description": "b"}), "a")
         self.assertEqual(up.tagline({"description": "b"}), "b")
         self.assertEqual(up.tagline({}), "")
+
+    def test_english_text_falls_back_to_japanese(self):
+        c = {"name": "名前", "tagline": "ひとこと", "description_en": "In English"}
+        self.assertEqual(up.tagline(c, "en"), "In English")
+        self.assertEqual(up.tagline({"tagline": "ひとこと"}, "en"), "ひとこと")
+        self.assertEqual(up.tagline({"tagline_en": "One line"}, "ja"), "One line")
+        self.assertEqual(up.name(c, "en"), "名前")
+        self.assertEqual(up.name({"name": "名前", "name_en": "Name"}, "en"), "Name")
 
     @unittest.skipUnless((WORKSPACE / "kobito_workspace" / "kit" / "package.py").is_file(),
                          "kobito-workspace is not next to this repository")
@@ -159,12 +175,13 @@ class RenderTest(unittest.TestCase):
                     description="説明のための架空のメモのアプリ", version="0.1.0",
                     platforms=["macos", "windows"]),
                 kobito_url("Sample"): listing("icon.svg", "icon-1024.png", "screenshot.png"),
+                kobito_url("Sample", "assets"): assets("social-preview.png", "other.svg"),
                 f"{API}/repos/{ORG}/Sample/tags?per_page=100&page=1":
                     json.dumps([{"name": "v0.1.0"}, {"name": "v0.10.0"}, {"name": "contracts-v1"}]),
-                # Native: no tagline, no screenshot (the Social preview is used), a tag.
+                # Native: no tagline, no assets/social-preview.png (the Social preview is used), a tag.
                 manifest_url("SampleNative"): manifest(
                     "sample-native", "Sample Native", kind="native", description="説明のための架空の常駐アプリ",
-                    version="1.0.0", platforms=["macos"]),
+                    description_en="A made-up resident app", version="1.0.0", platforms=["macos"]),
                 kobito_url("SampleNative"): listing("icon.svg", "icon-1024.png"),
                 f"{API}/repos/{ORG}/SampleNative/tags?per_page=100&page=1": json.dumps([{"name": "v1.0.0"}]),
                 f"https://github.com/{ORG}/SampleNative":
@@ -179,10 +196,10 @@ class RenderTest(unittest.TestCase):
     def test_lineup_from_cards(self):
         fetch = self.sample_site()
         skipped = []
-        body, count = up.render(up.GitHub(fetch), skipped.append)
+        bodies, count = up.render(up.GitHub(fetch), skipped.append, ("ja", "en"))
 
         self.assertEqual(count, 3)
-        sections = body.split("\n\n### ")
+        sections = bodies["ja"].split("\n\n### ")
         self.assertEqual(len(sections), 3)
         hub, python, native = sections
 
@@ -204,18 +221,50 @@ class RenderTest(unittest.TestCase):
             f" [Sample](https://github.com/{ORG}/Sample)",
             "思いついたことを、すぐ書きとめる",
             f'<a href="https://github.com/{ORG}/Sample">'
-            f'<img src="{RAW}/Sample/main/kobito/screenshot.png" width="640" alt="Sample"></a>',
+            f'<img src="{RAW}/Sample/main/assets/social-preview.png" width="640" alt="Sample"></a>',
             f"**種類:** Python　**対応 OS:** macOS · Windows　"
             f"**最新版:** [v0.10.0](https://github.com/{ORG}/Sample/tree/v0.10.0)",
         ]))
 
-        self.assertNotIn("Hidden", body)
-        self.assertNotIn("description", body)  # GitHub's Description is not part of the card
+        # English: same order and images, English labels and text (Japanese when there is no English).
+        en_hub, en_python, en_native = bodies["en"].split("\n\n### ")
+        self.assertTrue(en_hub.endswith("**Type:** Python &nbsp;·&nbsp; **Platforms:** — &nbsp;·&nbsp; **Latest:** 0.1.0"))
+        self.assertIn("\n\nA made-up resident app\n\n", en_native)
+        self.assertIn("**Type:** Native", en_native)
+        self.assertIn("\n\n思いついたことを、すぐ書きとめる\n\n", en_python)
+        self.assertIn(f"{RAW}/Sample/main/assets/social-preview.png", en_python)
+
+        self.assertNotIn("Hidden", bodies["ja"])
+        self.assertNotIn("description", bodies["ja"])  # GitHub's Description is not part of the card
         self.assertEqual(len(skipped), 1)
         self.assertIn("NoManifest", skipped[0])
         self.assertFalse(any("/Old" in u for u in fetch.urls if u != manifest_url("Old")))
-        # The Social preview is only looked up when there is no screenshot.
+        # The Social preview is only looked up when there is no assets/social-preview.png,
+        # and each repository is read once for both languages.
         self.assertNotIn(f"https://github.com/{ORG}/Sample", fetch.urls)
+        self.assertEqual(fetch.urls.count(f"https://github.com/{ORG}/SampleNative"), 1)
+        self.assertNotIn(f"{RAW}/Sample/main/kobito/screenshot.png", bodies["ja"])
+
+    def test_too_large_social_preview_falls_back(self):
+        fetch = site([repo("Sample")], {
+            manifest_url("Sample"): manifest("sample", "Sample"),
+            kobito_url("Sample", "assets"): assets("social-preview.png", size=3 * 1024 * 1024),
+            f"https://github.com/{ORG}/Sample":
+                '<meta property="og:image" content="https://repository-images.githubusercontent.com/2/og">',
+        })
+        bodies, _ = up.render(up.GitHub(fetch), lambda s: None)
+        self.assertIn('src="https://repository-images.githubusercontent.com/2/og"', bodies["ja"])
+
+    def test_lists_every_page_of_repositories(self):
+        first = [repo(f"Other{i:03}") for i in range(100)]
+        fetch = FakeFetch({
+            list_url(1): json.dumps(first),
+            list_url(2): json.dumps([repo("Sample")]),
+            manifest_url("Sample"): manifest("sample", "Sample"),
+        })
+        bodies, count = up.render(up.GitHub(fetch), lambda s: None)
+        self.assertEqual(count, 1)
+        self.assertTrue(bodies["ja"].startswith("### [Sample]"))
 
     def test_native_uses_tags_not_releases(self):
         fetch = site([repo("SampleNative")], {
@@ -224,7 +273,7 @@ class RenderTest(unittest.TestCase):
             # A leftover Release must not win over the tags.
             f"{API}/repos/{ORG}/SampleNative/releases/latest": json.dumps({"tag_name": "v9.9.9"}),
         })
-        body, _ = up.render(up.GitHub(fetch), lambda s: None)
+        body = up.render(up.GitHub(fetch), lambda s: None)[0]["ja"]
         self.assertIn(f"[v0.1.4](https://github.com/{ORG}/SampleNative/tree/v0.1.4)", body)
         self.assertNotIn("v9.9.9", body)
         self.assertFalse(any("/releases" in url for url in fetch.urls))
@@ -239,8 +288,11 @@ class RenderTest(unittest.TestCase):
                 {"path": "kobito/screenshot.png", "type": "file", "size": 3 * 1024 * 1024},
                 {"path": "kobito/banner.png", "type": "file", "size": 10},
             ]),
+            kobito_url("Sample", "assets"): json.dumps([
+                {"path": "assets/social-preview.png", "type": "symlink", "size": 10},
+            ]),
         })
-        body, _ = up.render(up.GitHub(fetch), lambda s: None)
+        body = up.render(up.GitHub(fetch), lambda s: None)[0]["ja"]
         self.assertNotIn("<img", body)
 
     def test_token_reads_social_preview_with_graphql(self):
@@ -250,7 +302,7 @@ class RenderTest(unittest.TestCase):
                 "usesCustomOpenGraphImage": True, "openGraphImageUrl": "https://example.com/og.png"}}}),
         })
         os.environ["GITHUB_TOKEN"] = "test"
-        body, _ = up.render(up.GitHub(fetch), lambda s: None)
+        body = up.render(up.GitHub(fetch), lambda s: None)[0]["ja"]
         self.assertIn('src="https://example.com/og.png" width="640"', body)
 
     def test_list_failure_raises(self):
@@ -262,8 +314,10 @@ class MainTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
-        self.readme = self.root / "README.md"
-        self.readme.write_text(f"intro\n{up.START}\nhand-written\n{up.END}\noutro\n", encoding="utf-8")
+        self.readmes = {"en": self.root / "README.md", "ja": self.root / "README.ja.md"}
+        for readme in self.readmes.values():
+            readme.write_text(f"intro\n{up.START}\nhand-written\n{up.END}\noutro\n", encoding="utf-8")
+        self.readme = self.readmes["ja"]
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -281,10 +335,13 @@ class MainTest(unittest.TestCase):
                 subprocess.run(git + ["tag", t], check=True)
 
     def test_local_replaces_hand_written_list(self):
-        self.app("Sample", manifest("sample", "Sample", tagline="ひとこと", repository=f"{ORG}/Sample"),
-                 tags=["v0.2.1"])
+        self.app("Sample", manifest("sample", "Sample", tagline="ひとこと", tagline_en="One line",
+                                    repository=f"{ORG}/Sample"), tags=["v0.2.1"])
         self.app("broken", "{")
-        self.assertEqual(up.main(["--local", str(self.root / "apps")], readme=self.readme), 0)
+        self.assertEqual(up.main(["--local", str(self.root / "apps")], readmes=self.readmes), 0)
+        english = self.readmes["en"].read_text(encoding="utf-8")
+        self.assertIn("One line", english)
+        self.assertIn("**Latest:**", english)
         text = self.readme.read_text(encoding="utf-8")
         self.assertNotIn("hand-written", text)
         self.assertIn("### [Sample]", text)  # local images are not linked: GitHub may not have them yet
@@ -295,13 +352,14 @@ class MainTest(unittest.TestCase):
     def test_nothing_found_keeps_readme(self):
         (self.root / "apps").mkdir()
         before = self.readme.read_text(encoding="utf-8")
-        self.assertEqual(up.main(["--local", str(self.root / "apps")], readme=self.readme), 0)
+        self.assertEqual(up.main(["--local", str(self.root / "apps")], readmes=self.readmes), 0)
         self.assertEqual(self.readme.read_text(encoding="utf-8"), before)
 
-    def test_missing_markers_fails(self):
+    def test_missing_markers_fails_without_writing_either(self):
         self.app("Sample", manifest("sample", "Sample"))
         self.readme.write_text("no markers\n", encoding="utf-8")
-        self.assertEqual(up.main(["--local", str(self.root / "apps")], readme=self.readme), 1)
+        self.assertEqual(up.main(["--local", str(self.root / "apps")], readmes=self.readmes), 1)
+        self.assertIn("hand-written", self.readmes["en"].read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
