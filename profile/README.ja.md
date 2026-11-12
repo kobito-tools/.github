@@ -37,7 +37,7 @@ zsh -c "$(curl -fsSL https://raw.githubusercontent.com/kobito-tools/kobito-works
 
 キーを押している間だけ、アプリやファイルへの扉が開く
 
-<a href="https://github.com/kobito-tools/OpenSesame"><img src="https://repository-images.githubusercontent.com/1382855232/03a62c13-b261-42ac-898c-e7c8617d9ca8" width="640" alt="OpenSesame!"></a>
+<a href="https://github.com/kobito-tools/OpenSesame"><img src="https://raw.githubusercontent.com/kobito-tools/OpenSesame/main/assets/social-preview.ja.png" width="640" alt="OpenSesame!"></a>
 
 **種類:** ネイティブ　**対応 OS:** macOS · Windows　**最新版:** [v1.0.0](https://github.com/kobito-tools/OpenSesame/tree/v1.0.0)
 <!-- TOOLS:END -->

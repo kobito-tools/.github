@@ -37,7 +37,7 @@ Pin what you copy to a corkboard
 
 Hold a key and the door to your apps and files opens
 
-<a href="https://github.com/kobito-tools/OpenSesame"><img src="https://repository-images.githubusercontent.com/1382855232/03a62c13-b261-42ac-898c-e7c8617d9ca8" width="640" alt="OpenSesame!"></a>
+<a href="https://github.com/kobito-tools/OpenSesame"><img src="https://raw.githubusercontent.com/kobito-tools/OpenSesame/main/assets/social-preview.png" width="640" alt="OpenSesame!"></a>
 
 **Type:** Native &nbsp;·&nbsp; **Platforms:** macOS · Windows &nbsp;·&nbsp; **Latest:** [v1.0.0](https://github.com/kobito-tools/OpenSesame/tree/v1.0.0)
 <!-- TOOLS:END -->
